@@ -47,6 +47,20 @@ npm start
 
 Then open http://localhost:3000
 
+## Pushing this to GitHub
+
+`.gitignore` already excludes `.env`, so your real token won't get committed —
+only `.env.example` (which has no real secret in it) goes into the repo.
+GitHub itself (including GitHub Pages) only serves static files and can't run
+`server.js`, so treat GitHub as where the *code* lives, not where the *site*
+runs. Deploy the code from your repo to one of the Node hosts below, and set
+`COC_API_TOKEN` (and `CLAN_TAG`) as an environment variable in that host's
+dashboard rather than as a file.
+
+If you've already pushed a real token by accident: revoke it immediately at
+developer.clashofclans.com and generate a new one — removing it from a later
+commit doesn't remove it from git history.
+
 ## Deploying
 
 Any host works, but remember the IP-whitelisting requirement above:
