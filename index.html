@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phoenix — Clan Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#130c0a;
+    --ash:#241a17;
+    --ash-2:#31241f;
+    --ember:#ff6a3d;
+    --crimson:#b3231c;
+    --gold:#e8b04b;
+    --bone:#f2e9dd;
+    --bone-dim:#c9bcae;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255,106,61,.16), transparent 60%),
+      var(--void);
+    color:var(--bone);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+  .display{font-family:'Cinzel', serif;}
+
+  /* ember particles */
+  .embers{position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0;}
+  .ember-dot{
+    position:absolute; bottom:-10px; width:3px; height:3px; border-radius:50%;
+    background:var(--ember); box-shadow:0 0 6px 1px rgba(255,106,61,.8);
+    animation:rise linear infinite;
+    opacity:0;
+  }
+  @keyframes rise{
+    0%{ transform:translateY(0) translateX(0); opacity:0; }
+    8%{ opacity:.9; }
+    100%{ transform:translateY(-110vh) translateX(var(--drift,20px)); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ember-dot{ animation:none; display:none; }
+  }
+
+  header{
+    position:relative; z-index:1;
+    max-width:960px; margin:0 auto; padding:64px 24px 32px;
+    text-align:center;
+  }
+  .crest{
+    width:64px; height:64px; margin:0 auto 18px;
+  }
+  .eyebrow{
+    letter-spacing:.35em; text-transform:uppercase; font-size:11px;
+    color:var(--gold); margin-bottom:14px;
+  }
+  h1{
+    font-size:clamp(40px, 7vw, 72px); margin:0; line-height:1;
+    background:linear-gradient(180deg, var(--bone) 10%, var(--ember) 120%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    letter-spacing:.01em;
+  }
+  .tagline{ color:var(--bone-dim); margin-top:14px; font-size:15px; }
+
+  .tag-form{
+    display:flex; gap:8px; justify-content:center; margin-top:28px; flex-wrap:wrap;
+  }
+  .tag-form input{
+    background:var(--ash); border:1px solid var(--ash-2); color:var(--bone);
+    padding:11px 14px; border-radius:8px; font-family:'JetBrains Mono', monospace;
+    font-size:14px; width:220px; outline:none;
+  }
+  .tag-form input:focus{ border-color:var(--ember); }
+  .tag-form button{
+    background:var(--crimson); color:var(--bone); border:none; border-radius:8px;
+    padding:11px 20px; font-weight:600; cursor:pointer; font-size:14px;
+    transition:background .15s ease;
+  }
+  .tag-form button:hover{ background:var(--ember); }
+
+  main{ position:relative; z-index:1; max-width:960px; margin:0 auto; padding:0 24px 80px; }
+
+  .divider{ display:flex; align-items:center; gap:14px; margin:48px 0 24px; color:var(--gold); }
+  .divider::before, .divider::after{ content:''; flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--ash-2), transparent); }
+  .divider span{ font-size:12px; letter-spacing:.25em; text-transform:uppercase; }
+
+  .stat-strip{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr));
+    gap:1px; background:var(--ash-2); border:1px solid var(--ash-2); border-radius:12px; overflow:hidden;
+  }
+  .stat{ background:var(--ash); padding:20px 16px; text-align:center; }
+  .stat .num{ font-size:26px; font-weight:600; color:var(--ember); }
+  .stat .label{ font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--bone-dim); margin-top:6px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--gold); padding:10px 12px; border-bottom:1px solid var(--ash-2);
+  }
+  td{ padding:12px; border-bottom:1px solid var(--ash-2); }
+  tr:hover td{ background:rgba(255,106,61,.05); }
+  .role-leader{ color:var(--gold); }
+  .role-coLeader{ color:var(--ember); }
+  .rank-num{ color:var(--bone-dim); font-family:'JetBrains Mono', monospace; }
+
+  .war-card{
+    border:1px solid var(--ash-2); border-radius:12px; padding:22px; background:var(--ash);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+  }
+  .war-state{ font-family:'JetBrains Mono', monospace; font-size:13px; padding:4px 10px; border-radius:999px; border:1px solid var(--ash-2); }
+  .war-state.inWar{ color:var(--ember); border-color:var(--ember); }
+  .war-state.preparation{ color:var(--gold); border-color:var(--gold); }
+
+  .empty, .error{ color:var(--bone-dim); font-size:14px; padding:20px 0; }
+  .error{ color:#ff8a7a; }
+
+  footer{ position:relative; z-index:1; text-align:center; color:var(--bone-dim); font-size:12px; padding-bottom:40px; }
+  footer a{ color:var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="embers" id="embers"></div>
+
+<header>
+  <svg class="crest" viewBox="0 0 64 64" fill="none">
+    <path d="M32 4C24 16 14 20 14 34c0 12 8 20 18 24 10-4 18-12 18-24C50 20 40 16 32 4Z" fill="url(#g)"/>
+    <path d="M32 16c-4 8-9 11-9 19a9 9 0 0018 0c0-8-5-11-9-19Z" fill="var(--void)" opacity=".55"/>
+    <defs>
+      <linearGradient id="g" x1="32" y1="4" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#e8b04b"/>
+        <stop offset="1" stop-color="#b3231c"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="eyebrow">Clan Dashboard</div>
+  <h1 class="display">Phoenix</h1>
+  <p class="tagline">Live roster, trophies and war status — pulled straight from the Clash of Clans API.</p>
+
+  <form class="tag-form" id="tagForm">
+    <input id="tagInput" class="mono" type="text" placeholder="#CLANTAG" autocomplete="off" />
+    <button type="submit">Load Clan</button>
+  </form>
+</header>
+
+<main>
+  <div id="content">
+    <p class="empty">Enter your clan tag above and choose "Load Clan" — or set <span class="mono">CLAN_TAG</span> in the server's <span class="mono">.env</span> to load it automatically.</p>
+  </div>
+</main>
+
+<footer>
+  Data via the official Clash of Clans API. This page never sees or stores your API token — it stays on the server. ·
+  <a href="https://developer.clashofclans.com" target="_blank" rel="noopener">developer.clashofclans.com</a>
+</footer>
+
+<script>
+// ambient embers
+const emberField = document.getElementById('embers');
+for (let i = 0; i < 26; i++) {
+  const d = document.createElement('div');
+  d.className = 'ember-dot';
+  d.style.left = Math.random() * 100 + 'vw';
+  d.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+  d.style.animationDuration = (7 + Math.random() * 9) + 's';
+  d.style.animationDelay = (Math.random() * 10) + 's';
+  emberField.appendChild(d);
+}
+
+const content = document.getElementById('content');
+const tagForm = document.getElementById('tagForm');
+const tagInput = document.getElementById('tagInput');
+
+const params = new URLSearchParams(location.search);
+const initialTag = params.get('tag');
+if (initialTag) { tagInput.value = initialTag; loadClan(initialTag); }
+else { loadClan(); } // try server-configured default tag
+
+tagForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const t = tagInput.value.trim();
+  if (t) loadClan(t);
+});
+
+function fmt(n){ return new Intl.NumberFormat().format(n); }
+
+async function loadClan(tag) {
+  content.innerHTML = '<p class="empty">Loading…</p>';
+  const q = tag ? `?tag=${encodeURIComponent(tag)}` : '';
+  try {
+    const [clanRes, membersRes, warRes] = await Promise.all([
+      fetch(`/api/clan${q}`),
+      fetch(`/api/clan/members${q}`),
+      fetch(`/api/clan/currentwar${q}`),
+    ]);
+
+    if (!clanRes.ok) {
+      const err = await clanRes.json().catch(() => ({}));
+      content.innerHTML = `<p class="error">${err.error || 'Could not load clan.'}</p>`;
+      return;
+    }
+
+    const clan = await clanRes.json();
+    const members = membersRes.ok ? await membersRes.json() : { items: [] };
+    const war = warRes.ok ? await warRes.json() : null;
+    const warErr = !warRes.ok ? await warRes.json().catch(() => ({})) : null;
+
+    render(clan, members.items || [], war, warErr);
+  } catch (err) {
+    content.innerHTML = `<p class="error">Network error reaching the server: ${err.message}</p>`;
+  }
+}
+
+function render(clan, members, war, warErr) {
+  const stats = [
+    ['Level', clan.clanLevel],
+    ['Members', `${clan.members}/50`],
+    ['Trophies', fmt(clan.clanPoints)],
+    ['War Wins', fmt(clan.warWins ?? 0)],
+    ['War League', clan.warLeague ? clan.warLeague.name : '—'],
+  ];
+
+  let warBlock = '';
+  if (war && war.state && war.state !== 'notInWar') {
+    warBlock = `
+      <div class="divider"><span>Current War</span></div>
+      <div class="war-card">
+        <div>
+          <div style="font-size:15px; font-weight:600;">${war.clan?.name || 'Phoenix'} vs ${war.opponent?.name || 'Opponent'}</div>
+          <div class="mono" style="color:var(--bone-dim); font-size:13px; margin-top:4px;">
+            ${war.teamSize ?? '?'}v${war.teamSize ?? '?'} · ${fmt(war.clan?.stars ?? 0)}★ - ${fmt(war.opponent?.stars ?? 0)}★
+          </div>
+        </div>
+        <span class="war-state ${war.state}">${war.state.replace(/([A-Z])/g, ' $1')}</span>
+      </div>`;
+  } else if (warErr && warErr.error) {
+    warBlock = `<div class="divider"><span>Current War</span></div><p class="empty">${warErr.error}</p>`;
+  }
+
+  const rows = members
+    .slice()
+    .sort((a, b) => a.clanRank - b.clanRank)
+    .map(m => `
+      <tr>
+        <td class="rank-num">#${m.clanRank}</td>
+        <td>${m.name}</td>
+        <td class="${m.role === 'leader' ? 'role-leader' : m.role === 'coLeader' ? 'role-coLeader' : ''}">${roleLabel(m.role)}</td>
+        <td class="mono">Th${m.townHallLevel ?? '—'}</td>
+        <td class="mono">${fmt(m.trophies)}</td>
+        <td class="mono">${fmt(m.donations)} / ${fmt(m.donationsReceived)}</td>
+      </tr>`).join('');
+
+  content.innerHTML = `
+    <div style="display:flex; align-items:center; gap:16px;">
+      ${clan.badgeUrls ? `<img src="${clan.badgeUrls.medium}" width="56" height="56" alt="" style="filter:drop-shadow(0 0 8px rgba(255,106,61,.4));" />` : ''}
+      <div>
+        <div class="display" style="font-size:22px;">${clan.name}</div>
+        <div class="mono" style="color:var(--bone-dim); font-size:13px;">${clan.tag}</div>
+      </div>
+    </div>
+
+    <div class="divider"><span>Overview</span></div>
+    <div class="stat-strip">
+      ${stats.map(([label, num]) => `<div class="stat"><div class="num mono">${num}</div><div class="label">${label}</div></div>`).join('')}
+    </div>
+
+    ${warBlock}
+
+    <div class="divider"><span>Roster</span></div>
+    ${rows ? `
+    <table>
+      <thead><tr><th>Rank</th><th>Name</th><th>Role</th><th>TH</th><th>Trophies</th><th>Donated / Received</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>` : '<p class="empty">No member data available.</p>'}
+  `;
+}
+
+function roleLabel(role) {
+  return { leader: 'Leader', coLeader: 'Co-Leader', admin: 'Elder', member: 'Member' }[role] || role;
+}
+</script>
+</body>
+</html>

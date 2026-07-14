@@ -1,0 +1,14 @@
+{
+  "name": "phoenix-clan-site",
+  "version": "1.0.0",
+  "description": "Clash of Clans clan dashboard for Phoenix, backed by a token-safe API proxy.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5"
+  }
+}
